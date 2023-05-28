@@ -1,9 +1,12 @@
 import requests
-from bs4 import BeautifulSoup
 from kivy.core.text import LabelBase
 from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivy.core.window import Window
+from plyer import gps
+from kivy.utils import platform
+from kivy.clock import mainthread
+from kivy.properties import StringProperty
 
 Window.size = (338, 600)
 
@@ -20,7 +23,7 @@ MDFloatLayout:
         size_hint: .1, .1
         pos_hint: {"center_x": .9, "center_y": .95}
         background_color: 1,1,1,0
-        on_release: app.get_location_weather()
+        on_release: app.gps_location_weather()
     Image:
         source: "assets/get_location.png"
         size_hint: .1, .1
@@ -180,7 +183,7 @@ MDFloatLayout:
                     size: self.size
                     pos: self.pos
                     radius: [10,10,10,10]
-                    
+
             MDLabel:
                 id: d1_date
                 text: "01"
@@ -201,10 +204,6 @@ MDFloatLayout:
                 pos_hint: {"center_x": .5, "center_y": .5}
                 size_hint: .9,.9
 
-                
-                
-                
-                
         MDFloatLayout:
             pos_hint: {"center_x": .305, "center_y": .5}
             size_hint: .17, .9
@@ -234,7 +233,7 @@ MDFloatLayout:
                 source: "assets/snow.png"
                 pos_hint: {"center_x": .5, "center_y": .5}
                 size_hint: .9,.9        
-            
+
         MDFloatLayout:
             pos_hint: {"center_x": .5, "center_y": .5}
             size_hint: .17, .9
@@ -264,7 +263,7 @@ MDFloatLayout:
                 source: "assets/wind.png"
                 pos_hint: {"center_x": .5, "center_y": .5}
                 size_hint: .9,.9        
-                    
+
         MDFloatLayout:
             pos_hint: {"center_x": .695, "center_y": .5}
             size_hint: .17, .9
@@ -329,9 +328,10 @@ MDFloatLayout:
 class WeatherApp(MDApp):
     api_key = "API_KEY"
     gps_city_memory = ''
-    last_call_cityname = ''
-    last_call_citycode = ''
-    last_call_coord = {'lon': 0, 'lat': 0}
+    last_call_coord = {'lon': 10., 'lat': 10.}
+
+    gps_location = StringProperty()
+    gps_status = StringProperty('=)')
 
     def button_test(self):
         print("Button pressed")
@@ -344,6 +344,17 @@ class WeatherApp(MDApp):
         self.root.ids.location.text = ""
         self.root.ids.weather_image.source = "assets/notconnected.png"
 
+        self.root.ids.d1_img.source = "assets/no_data.png"
+        self.root.ids.d1_temp.text = '-°'
+        self.root.ids.d2_img.source = "assets/no_data.png"
+        self.root.ids.d2_temp.text = '-°'
+        self.root.ids.d3_img.source = "assets/no_data.png"
+        self.root.ids.d3_temp.text = '-°'
+        self.root.ids.d4_img.source = "assets/no_data.png"
+        self.root.ids.d4_temp.text = '-°'
+        self.root.ids.d5_img.source = "assets/no_data.png"
+        self.root.ids.d5_temp.text = '-°'
+
     def city_notfound(self):
         self.root.ids.temperature.text = "[b]--[/b]°"
         self.root.ids.weather.text = "City Not Found"
@@ -352,30 +363,20 @@ class WeatherApp(MDApp):
         self.root.ids.location.text = ""
         self.root.ids.weather_image.source = "assets/notfound.png"
 
-    def get_location_weather(self):
-        try:
-            if self.gps_city_memory == '':
-                print('пишу гуглу...')
-                soup = BeautifulSoup(
-                    requests.get(f"https://www.google.com/search?q=weather+at+my+current+location").text,
-                    "html.parser")
-                temp = soup.find("span", class_="BNeawe tAd8D AP7Wnd")
-                location = ''.join(filter(lambda item: not item.isdigit(), temp.text)).split(', ')
-                self.gps_city_memory = location[0]
-                print('нашел город', self.gps_city_memory)
-                print('пишу геокоду...')
-                url = f"https://api.openweathermap.org/data/2.5/weather?q={self.gps_city_memory}&appid={self.api_key}&units=metric"
-                response = requests.get(url)
-                x = response.json()
-                coorditanes = x['coord']
-                self.last_call_coord = coorditanes
-                print('нашел коорды: ', coorditanes)
-                self.get_weather(coorditanes)
-            else:
-                self.get_weather(self.last_call_coord)
-        except requests.ConnectionError:
-            self.no_connection()
-            print("no connection")
+        self.root.ids.d1_img.source = "assets/no_data.png"
+        self.root.ids.d1_temp.text = '-°'
+        self.root.ids.d2_img.source = "assets/no_data.png"
+        self.root.ids.d2_temp.text = '-°'
+        self.root.ids.d3_img.source = "assets/no_data.png"
+        self.root.ids.d3_temp.text = '-°'
+        self.root.ids.d4_img.source = "assets/no_data.png"
+        self.root.ids.d4_temp.text = '-°'
+        self.root.ids.d5_img.source = "assets/no_data.png"
+        self.root.ids.d5_temp.text = '-°'
+
+    def gps_location_weather(self):
+        print('ща буду искать тут: ', self.last_call_coord)
+        self.get_weather(self.last_call_coord)
 
     def get_weather(self, coordinates):
         try:
@@ -401,7 +402,7 @@ class WeatherApp(MDApp):
                     self.root.ids.weather_image.source = "assets/sun.png"
                 elif '200' <= weather_id <= '232':
                     self.root.ids.weather_image.source = "assets/storm.png"
-                elif '300' <= weather_id <= '321' and '500' <= weather_id <= '531':
+                elif '300' <= weather_id <= '321' or '500' <= weather_id <= '531':
                     self.root.ids.weather_image.source = "assets/rain.png"
                 elif '600' <= weather_id <= '622':
                     self.root.ids.weather_image.source = "assets/snow.png"
@@ -420,18 +421,18 @@ class WeatherApp(MDApp):
     def search_weather(self):
         city_name = self.root.ids.city_name.text
         if city_name != '':
-            # преобразовать название города в координаты
             print('пишу геокоду...')
             url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={self.api_key}&units=metric"
             response = requests.get(url)
             x = response.json()
-            print('получил рез\n', x['coord'])
-            coorditanes = x['coord']
-
-            # отправить координаты в get_weather
-            self.get_weather(coorditanes)
+            if (x['cod'] != '404'):
+                print('получил рез\n', x['coord'])
+                coorditanes = x['coord']
+                self.get_weather(coorditanes)
+            else:
+                self.city_notfound()
         else:
-            self.get_location_weather()
+            self.gps_location_weather()
 
     def forecast(self, coordinates):
         print('получаю прогноз...')
@@ -474,10 +475,47 @@ class WeatherApp(MDApp):
         self.root.ids.d5_temp.text = str(round(x['list'][33]['main']['temp'])) + '°'
         self.root.ids.d5_date.text = x["list"][33]['dt_txt'].split()[0].split('-')[2]
 
+    def request_android_permissions(self):
+        from android.permissions import request_permissions, Permission
+
+        def callback(permissions, results):
+            if all([res for res in results]):
+                print("callback. All permissions granted.")
+                self.gps_start(1000, 0)
+            else:
+                print("callback. Some permissions refused.")
+
+        request_permissions([Permission.ACCESS_COARSE_LOCATION,
+                             Permission.ACCESS_FINE_LOCATION], callback)
+
+    def gps_start(self, minTime, minDistance):
+        gps.start(minTime, minDistance)
+
+    @mainthread
+    def on_location(self, **kwargs):
+        self.gps_location = f"lat: {kwargs['lat']}  lon: {kwargs['lon']}"
+        self.last_call_coord['lat'] = kwargs['lat']
+        self.last_call_coord['lon'] = kwargs['lon']
+
+    @mainthread
+    def on_status(self, stype, status):
+        self.gps_status = 'type={}\n{}'.format(stype, status)
+
     def on_start(self):
-        self.no_connection()
+        self.gps_start(1000, 0)
+        self.get_weather(self.last_call_coord)
 
     def build(self):
+        if platform == "android":
+            try:
+                gps.configure(on_location=self.on_location,
+                              on_status=self.on_status)
+            except NotImplementedError:
+                import traceback
+                traceback.print_exc()
+                self.gps_status = 'GPS is not implemented for your platform'
+            print("gps.py: Android detected. Requesting permissions")
+            self.request_android_permissions()
         return Builder.load_string(kv)
 
 
