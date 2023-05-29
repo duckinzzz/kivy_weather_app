@@ -7,6 +7,7 @@ from plyer import gps
 from kivy.utils import platform
 from kivy.clock import mainthread
 from kivy.properties import StringProperty
+from kivy.clock import Clock
 
 Window.size = (338, 600)
 
@@ -111,7 +112,7 @@ MDFloatLayout:
             RoundedRectangle:
                 size: self.size
                 pos: self.pos
-                radius: [15,15,0,0]
+                radius: [30,30,0,0]
 
         MDFloatLayout:
             pos_hint: {"center_x": .38, "center_y": .5}
@@ -171,7 +172,7 @@ MDFloatLayout:
             RoundedRectangle:
                 size: self.size
                 pos: self.pos
-                radius: [15,15,15,15]
+                radius: [40,40,40,40]
 
         MDFloatLayout:
             pos_hint: {"center_x": .11, "center_y": .5}
@@ -182,7 +183,7 @@ MDFloatLayout:
                 RoundedRectangle:
                     size: self.size
                     pos: self.pos
-                    radius: [10,10,10,10]
+                    radius: [25,25,25,25]
 
             MDLabel:
                 id: d1_date
@@ -213,7 +214,7 @@ MDFloatLayout:
                 RoundedRectangle:
                     size: self.size
                     pos: self.pos
-                    radius: [10,10,10,10]
+                    radius: [25,25,25,25]
             MDLabel:
                 id: d2_date
                 text: "02"
@@ -243,7 +244,7 @@ MDFloatLayout:
                 RoundedRectangle:
                     size: self.size
                     pos: self.pos
-                    radius: [10,10,10,10]
+                    radius: [25,25,25,25]
             MDLabel:
                 id: d3_date
                 text: "03"
@@ -273,7 +274,7 @@ MDFloatLayout:
                 RoundedRectangle:
                     size: self.size
                     pos: self.pos
-                    radius: [10,10,10,10]
+                    radius: [25,25,25,25]
             MDLabel:
                 id: d4_date
                 text: "04"
@@ -302,7 +303,7 @@ MDFloatLayout:
                 RoundedRectangle:
                     size: self.size
                     pos: self.pos
-                    radius: [10,10,10,10]    
+                    radius: [25,25,25,25]
             MDLabel:
                 id: d5_date
                 text: "05"
@@ -336,14 +337,7 @@ class WeatherApp(MDApp):
     def button_test(self):
         print("Button pressed")
 
-    def no_connection(self):
-        self.root.ids.temperature.text = "[b]--[/b]°"
-        self.root.ids.weather.text = "No connection"
-        self.root.ids.humidity.text = "--%"
-        self.root.ids.wind_speed.text = "-- m/s"
-        self.root.ids.location.text = ""
-        self.root.ids.weather_image.source = "assets/notconnected.png"
-
+    def forecast_display_clear(self):
         self.root.ids.d1_img.source = "assets/no_data.png"
         self.root.ids.d1_temp.text = '-°'
         self.root.ids.d2_img.source = "assets/no_data.png"
@@ -354,6 +348,15 @@ class WeatherApp(MDApp):
         self.root.ids.d4_temp.text = '-°'
         self.root.ids.d5_img.source = "assets/no_data.png"
         self.root.ids.d5_temp.text = '-°'
+
+    def no_connection(self):
+        self.root.ids.temperature.text = "[b]--[/b]°"
+        self.root.ids.weather.text = "No connection"
+        self.root.ids.humidity.text = "--%"
+        self.root.ids.wind_speed.text = "-- m/s"
+        self.root.ids.location.text = ""
+        self.root.ids.weather_image.source = "assets/notconnected.png"
+        self.forecast_display_clear()
 
     def city_notfound(self):
         self.root.ids.temperature.text = "[b]--[/b]°"
@@ -362,17 +365,25 @@ class WeatherApp(MDApp):
         self.root.ids.wind_speed.text = "-- m/s"
         self.root.ids.location.text = ""
         self.root.ids.weather_image.source = "assets/notfound.png"
+        self.forecast_display_clear()
 
-        self.root.ids.d1_img.source = "assets/no_data.png"
-        self.root.ids.d1_temp.text = '-°'
-        self.root.ids.d2_img.source = "assets/no_data.png"
-        self.root.ids.d2_temp.text = '-°'
-        self.root.ids.d3_img.source = "assets/no_data.png"
-        self.root.ids.d3_temp.text = '-°'
-        self.root.ids.d4_img.source = "assets/no_data.png"
-        self.root.ids.d4_temp.text = '-°'
-        self.root.ids.d5_img.source = "assets/no_data.png"
-        self.root.ids.d5_temp.text = '-°'
+    def waiting_for_gps(self):
+        self.root.ids.temperature.text = "[b]--[/b]°"
+        self.root.ids.weather.text = "Waiting for GPS..."
+        self.root.ids.humidity.text = "--%"
+        self.root.ids.wind_speed.text = "-- m/s"
+        self.root.ids.location.text = ""
+        self.root.ids.weather_image.source = "assets/waiting_for_gps.png"
+        self.forecast_display_clear()
+
+    def gps_not_allowed(self):
+        self.root.ids.temperature.text = "[b]--[/b]°"
+        self.root.ids.weather.text = "GPS was not allowed"
+        self.root.ids.humidity.text = "--%"
+        self.root.ids.wind_speed.text = "-- m/s"
+        self.root.ids.location.text = ""
+        self.root.ids.weather_image.source = "assets/gps_not_allowed.png"
+        self.forecast_display_clear()
 
     def gps_location_weather(self):
         print('ща буду искать тут: ', self.last_call_coord)
@@ -425,7 +436,7 @@ class WeatherApp(MDApp):
             url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={self.api_key}&units=metric"
             response = requests.get(url)
             x = response.json()
-            if (x['cod'] != '404'):
+            if x['cod'] == '200':
                 print('получил рез\n', x['coord'])
                 coorditanes = x['coord']
                 self.get_weather(coorditanes)
@@ -482,8 +493,10 @@ class WeatherApp(MDApp):
             if all([res for res in results]):
                 print("callback. All permissions granted.")
                 self.gps_start(1000, 0)
+                Clock.schedule_once(lambda dt: self.get_weather(self.last_call_coord), 7)
             else:
                 print("callback. Some permissions refused.")
+                self.gps_not_allowed()
 
         request_permissions([Permission.ACCESS_COARSE_LOCATION,
                              Permission.ACCESS_FINE_LOCATION], callback)
@@ -502,8 +515,8 @@ class WeatherApp(MDApp):
         self.gps_status = 'type={}\n{}'.format(stype, status)
 
     def on_start(self):
-        self.gps_start(1000, 0)
-        self.get_weather(self.last_call_coord)
+        # self.gps_start(1000, 0)
+        self.gps_not_allowed()
 
     def build(self):
         if platform == "android":
@@ -516,6 +529,7 @@ class WeatherApp(MDApp):
                 self.gps_status = 'GPS is not implemented for your platform'
             print("gps.py: Android detected. Requesting permissions")
             self.request_android_permissions()
+
         return Builder.load_string(kv)
 
 
