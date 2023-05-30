@@ -10,6 +10,9 @@ from kivy.properties import StringProperty
 from kivy.clock import Clock
 
 Window.size = (338, 600)
+Window.keyboard_anim_args = {'d': .2, 't': 'in_out_expo'}
+Window.softinput_mode = "below_target"
+api_key = "API_KEY"
 
 kv = '''
 MDFloatLayout:
@@ -29,16 +32,6 @@ MDFloatLayout:
         source: "assets/get_location.png"
         size_hint: .1, .1
         pos_hint: {"center_x": .9, "center_y": .95}
-
-    Button:
-        size_hint: .1, .1
-        pos_hint: {"center_x": .1, "center_y": .95}
-        background_color: 1,1,1,1
-        on_release: app.button_test() 
-    Image:
-        source: "assets/settings.png"
-        size_hint: .1, .1
-        pos_hint: {"center_x": .1, "center_y": .95}
 
     MDLabel:
         id: location
@@ -327,15 +320,11 @@ MDFloatLayout:
 
 
 class WeatherApp(MDApp):
-    api_key = "API_KEY"
     gps_city_memory = ''
-    last_call_coord = {'lon': 10., 'lat': 10.}
+    last_call_coord = {'lon': 0., 'lat': 0.}
 
     gps_location = StringProperty()
     gps_status = StringProperty('=)')
-
-    def button_test(self):
-        print("Button pressed")
 
     def forecast_display_clear(self):
         self.root.ids.d1_img.source = "assets/no_data.png"
@@ -385,72 +374,111 @@ class WeatherApp(MDApp):
         self.root.ids.weather_image.source = "assets/gps_not_allowed.png"
         self.forecast_display_clear()
 
+    def gps_failed(self):
+        self.root.ids.temperature.text = "[b]--[/b]°"
+        self.root.ids.weather.text = "GPS fail, retrying..."
+        self.root.ids.humidity.text = "--%"
+        self.root.ids.wind_speed.text = "-- m/s"
+        self.root.ids.location.text = ""
+        self.root.ids.weather_image.source = "assets/gps_not_allowed.png"
+        self.forecast_display_clear()
+
     def gps_location_weather(self):
         print('ща буду искать тут: ', self.last_call_coord)
         self.get_weather(self.last_call_coord)
 
     def get_weather(self, coordinates):
-        try:
-            print('пишу погоде...')
-            url = f"https://api.openweathermap.org/data/2.5/weather?lat={coordinates['lat']}&lon={coordinates['lon']}&appid={self.api_key}&units=metric"
-            response = requests.get(url)
-            x = response.json()
-            print('получил рез\n', x)
-            if x["cod"] != "404":
-                self.root.ids.city_name.text = ''
-                temperature = round(x['main']['temp'])
-                humidity = x['main']['humidity']
-                weather = x['weather'][0]['main']
-                weather_id = str(x['weather'][0]['id'])
-                wind_speed = round(x['wind']['speed'])
-                location = x["name"] + ', ' + x['sys']['country']
-                self.root.ids.temperature.text = f"[b]{temperature}[/b]°"
-                self.root.ids.weather.text = str(weather)
-                self.root.ids.humidity.text = f"{humidity}%"
-                self.root.ids.wind_speed.text = f"{wind_speed} m/s"
-                self.root.ids.location.text = location
-                if weather_id == '800':
-                    self.root.ids.weather_image.source = "assets/sun.png"
-                elif '200' <= weather_id <= '232':
-                    self.root.ids.weather_image.source = "assets/storm.png"
-                elif '300' <= weather_id <= '321' or '500' <= weather_id <= '531':
-                    self.root.ids.weather_image.source = "assets/rain.png"
-                elif '600' <= weather_id <= '622':
-                    self.root.ids.weather_image.source = "assets/snow.png"
-                elif '701' <= weather_id <= '781':
-                    self.root.ids.weather_image.source = "assets/haze.png"
-                elif '801' <= weather_id <= '804':
-                    self.root.ids.weather_image.source = "assets/clouds.png"
-                self.forecast(coordinates)
-            else:
-                self.city_notfound()
-                print("city not found")
-        except requests.ConnectionError:
-            self.no_connection()
-            print("no connection")
+        if coordinates != {'lon': 0., 'lat': 0.}:
+            try:
+                print('пишу погоде...')
+                url = f"https://api.openweathermap.org/data/2.5/weather?" \
+                      f"lat={coordinates['lat']}&lon={coordinates['lon']}&appid={api_key}&units=metric"
+                response = requests.get(url)
+                x = response.json()
+                print('получил рез\n', x)
+                if x["cod"] != "404":
+                    self.root.ids.city_name.text = ''
+                    temperature = round(x['main']['temp'])
+                    humidity = x['main']['humidity']
+                    weather = x['weather'][0]['main']
+                    weather_id = str(x['weather'][0]['id'])
+                    wind_speed = round(x['wind']['speed'])
+                    location = x["name"] + ', ' + x['sys']['country']
+                    self.root.ids.temperature.text = f"[b]{temperature}[/b]°"
+                    self.root.ids.weather.text = str(weather)
+                    self.root.ids.humidity.text = f"{humidity}%"
+                    self.root.ids.wind_speed.text = f"{wind_speed} m/s"
+                    self.root.ids.location.text = location
+                    if weather_id == '800':
+                        self.root.ids.weather_image.source = "assets/sun.png"
+                    elif '200' <= weather_id <= '232':
+                        self.root.ids.weather_image.source = "assets/storm.png"
+                    elif '300' <= weather_id <= '321' or '500' <= weather_id <= '531':
+                        self.root.ids.weather_image.source = "assets/rain.png"
+                    elif '600' <= weather_id <= '622':
+                        self.root.ids.weather_image.source = "assets/snow.png"
+                    elif '701' <= weather_id <= '781':
+                        self.root.ids.weather_image.source = "assets/haze.png"
+                    elif '801' <= weather_id <= '804':
+                        self.root.ids.weather_image.source = "assets/clouds.png"
+                    self.forecast(coordinates)
+                else:
+                    self.city_notfound()
+                    print("city not found")
+            except requests.ConnectionError:
+                self.no_connection()
+                print("no connection")
+        else:
+            self.gps_failed()
+            print('gps retrying')
+            Clock.schedule_once(lambda dt: self.get_weather(self.last_call_coord), 1)
 
     def search_weather(self):
         city_name = self.root.ids.city_name.text
         if city_name != '':
             print('пишу геокоду...')
-            url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={self.api_key}&units=metric"
+            url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}&units=metric"
             response = requests.get(url)
             x = response.json()
-            if x['cod'] == '200':
+            if x['cod'] == 200:
                 print('получил рез\n', x['coord'])
                 coorditanes = x['coord']
                 self.get_weather(coorditanes)
             else:
                 self.city_notfound()
-        else:
-            self.gps_location_weather()
 
     def forecast(self, coordinates):
         print('получаю прогноз...')
-        url = f"https://api.openweathermap.org/data/2.5/forecast?lat={coordinates['lat']}&lon={coordinates['lon']}&appid={self.api_key}&units=metric"
+        url = f"https://api.openweathermap.org/data/2.5/forecast?" \
+              f"lat={coordinates['lat']}&lon={coordinates['lon']}&appid={api_key}&units=metric"
         response = requests.get(url)
         x = response.json()
         print('получил прогноз:\n', x)
+        forecast_info = []
+        i = 0
+        while i < 40:
+            cur_date = x['list'][i]['dt_txt'].split()[0]
+            cur_max = 0.
+            cur_max_index = 0
+            will_rain = 'none'
+            while i < 40 and x['list'][i]['dt_txt'].split()[0] == cur_date:
+                if cur_max < x['list'][i]['main']['temp']:
+                    cur_max = x['list'][i]['main']['temp']
+                    cur_max_index = i
+                if 200 <= x['list'][i]['weather'][0]['id'] <= 232:
+                    will_rain = 'storm'
+                elif 300 <= x['list'][i]['weather'][0]['id'] <= 321 or 500 <= x['list'][i]['weather'][0]['id'] <= 531:
+                    will_rain = 'rain'
+                elif 600 <= x['list'][i]['weather'][0]['id'] <= 622:
+                    will_rain = 'snow'
+                i += 1
+            forecast_info.append([cur_max_index, will_rain])
+        for m in forecast_info:
+            i = m[0]
+            temp = x['list'][i]['main']['temp']
+            daytime = x['list'][i]['sys']['pod']
+            date = x['list'][i]['dt_txt'].split()[0]
+            print(*m, temp, daytime, date)
 
         def choose_img(weather_id):
             if weather_id == '800':
@@ -466,25 +494,32 @@ class WeatherApp(MDApp):
             elif '801' <= weather_id <= '804':
                 return "assets/clouds.png"
 
-        self.root.ids.d1_img.source = choose_img(str(x["list"][1]['weather'][0]['id']))
-        self.root.ids.d1_temp.text = str(round(x['list'][1]['main']['temp'])) + '°'
-        self.root.ids.d1_date.text = x["list"][1]['dt_txt'].split()[0].split('-')[2]
+        self.root.ids.d1_img.source = choose_img(str(x["list"][forecast_info[0][0]]['weather'][0]['id']))
+        self.root.ids.d1_temp.text = str(round(x['list'][forecast_info[0][0]]['main']['temp'])) + '°'
+        self.root.ids.d1_date.text = x["list"][forecast_info[0][0]]['dt_txt'].split()[0].split('-')[2]
 
-        self.root.ids.d2_img.source = choose_img(str(x["list"][9]['weather'][0]['id']))
-        self.root.ids.d2_temp.text = str(round(x['list'][9]['main']['temp'])) + '°'
-        self.root.ids.d2_date.text = x["list"][9]['dt_txt'].split()[0].split('-')[2]
+        self.root.ids.d2_img.source = choose_img(str(x["list"][forecast_info[1][0]]['weather'][0]['id']))
+        self.root.ids.d2_temp.text = str(round(x['list'][forecast_info[1][0]]['main']['temp'])) + '°'
+        self.root.ids.d2_date.text = x["list"][forecast_info[1][0]]['dt_txt'].split()[0].split('-')[2]
 
-        self.root.ids.d3_img.source = choose_img(str(x["list"][17]['weather'][0]['id']))
-        self.root.ids.d3_temp.text = str(round(x['list'][17]['main']['temp'])) + '°'
-        self.root.ids.d3_date.text = x["list"][17]['dt_txt'].split()[0].split('-')[2]
+        self.root.ids.d3_img.source = choose_img(str(x["list"][forecast_info[2][0]]['weather'][0]['id']))
+        self.root.ids.d3_temp.text = str(round(x['list'][forecast_info[2][0]]['main']['temp'])) + '°'
+        self.root.ids.d3_date.text = x["list"][forecast_info[2][0]]['dt_txt'].split()[0].split('-')[2]
 
-        self.root.ids.d4_img.source = choose_img(str(x["list"][25]['weather'][0]['id']))
-        self.root.ids.d4_temp.text = str(round(x['list'][25]['main']['temp'])) + '°'
-        self.root.ids.d4_date.text = x["list"][25]['dt_txt'].split()[0].split('-')[2]
+        self.root.ids.d4_img.source = choose_img(str(x["list"][forecast_info[3][0]]['weather'][0]['id']))
+        self.root.ids.d4_temp.text = str(round(x['list'][forecast_info[3][0]]['main']['temp'])) + '°'
+        self.root.ids.d4_date.text = x["list"][forecast_info[3][0]]['dt_txt'].split()[0].split('-')[2]
 
-        self.root.ids.d5_img.source = choose_img(str(x["list"][33]['weather'][0]['id']))
-        self.root.ids.d5_temp.text = str(round(x['list'][33]['main']['temp'])) + '°'
-        self.root.ids.d5_date.text = x["list"][33]['dt_txt'].split()[0].split('-')[2]
+        self.root.ids.d5_img.source = choose_img(str(x["list"][forecast_info[4][0]]['weather'][0]['id']))
+        self.root.ids.d5_temp.text = str(round(x['list'][forecast_info[4][0]]['main']['temp'])) + '°'
+        self.root.ids.d5_date.text = x["list"][forecast_info[4][0]]['dt_txt'].split()[0].split('-')[2]
+
+    def start_service(self):
+        from jnius import autoclass
+        service = autoclass('org.duckinzzz.kivyweather.ServiceNotify')
+        mActivity = autoclass('org.kivy.android.PythonActivity').mActivity
+        argument = ''
+        service.start(mActivity, argument)
 
     def request_android_permissions(self):
         from android.permissions import request_permissions, Permission
@@ -493,7 +528,7 @@ class WeatherApp(MDApp):
             if all([res for res in results]):
                 print("callback. All permissions granted.")
                 self.gps_start(1000, 0)
-                Clock.schedule_once(lambda dt: self.get_weather(self.last_call_coord), 7)
+                Clock.schedule_once(lambda dt: self.get_weather(self.last_call_coord), 5)
             else:
                 print("callback. Some permissions refused.")
                 self.gps_not_allowed()
@@ -509,14 +544,16 @@ class WeatherApp(MDApp):
         self.gps_location = f"lat: {kwargs['lat']}  lon: {kwargs['lon']}"
         self.last_call_coord['lat'] = kwargs['lat']
         self.last_call_coord['lon'] = kwargs['lon']
+        print(kwargs['lat'], kwargs['lon'], file=open('coords.txt', 'w'))
 
     @mainthread
     def on_status(self, stype, status):
         self.gps_status = 'type={}\n{}'.format(stype, status)
 
     def on_start(self):
-        # self.gps_start(1000, 0)
-        self.gps_not_allowed()
+        self.waiting_for_gps()
+        if platform == "android":
+            self.start_service()
 
     def build(self):
         if platform == "android":
