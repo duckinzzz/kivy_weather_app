@@ -384,18 +384,18 @@ class WeatherApp(MDApp):
         self.forecast_display_clear()
 
     def gps_location_weather(self):
-        print('ща буду искать тут: ', self.last_call_coord)
+        print('finding on: ', self.last_call_coord)
         self.get_weather(self.last_call_coord)
 
     def get_weather(self, coordinates):
         if coordinates != {'lon': 0., 'lat': 0.}:
             try:
-                print('пишу погоде...')
+                print('getting weather...')
                 url = f"https://api.openweathermap.org/data/2.5/weather?" \
                       f"lat={coordinates['lat']}&lon={coordinates['lon']}&appid={api_key}&units=metric"
                 response = requests.get(url)
                 x = response.json()
-                print('получил рез\n', x)
+                print('got result\n', x)
                 if x["cod"] != "404":
                     self.root.ids.city_name.text = ''
                     temperature = round(x['main']['temp'])
@@ -436,24 +436,24 @@ class WeatherApp(MDApp):
     def search_weather(self):
         city_name = self.root.ids.city_name.text
         if city_name != '':
-            print('пишу геокоду...')
+            print('getting geocode...')
             url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}&units=metric"
             response = requests.get(url)
             x = response.json()
             if x['cod'] == 200:
-                print('получил рез\n', x['coord'])
+                print('got result:\n', x['coord'])
                 coorditanes = x['coord']
                 self.get_weather(coorditanes)
             else:
                 self.city_notfound()
 
     def forecast(self, coordinates):
-        print('получаю прогноз...')
+        print('getting forecast...')
         url = f"https://api.openweathermap.org/data/2.5/forecast?" \
               f"lat={coordinates['lat']}&lon={coordinates['lon']}&appid={api_key}&units=metric"
         response = requests.get(url)
         x = response.json()
-        print('получил прогноз:\n', x)
+        print('got forecast:\n', x)
         forecast_info = []
         i = 0
         while i < 40:
