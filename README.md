@@ -1,6 +1,3 @@
-# Kivy Weather App
-Weather app made with Python framework Kivy
-
 ## Installing
 ### Android
 Install .apk file from `bin` on your Android device
