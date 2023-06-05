@@ -116,7 +116,7 @@ MDFloatLayout:
                 RoundedRectangle:
                     size: self.size
                     pos: self.pos
-                    radius: [6]
+                    radius: [15]
             TextInput:
                 id: city_name
                 hint_text: "Enter city name"
@@ -150,7 +150,7 @@ MDFloatLayout:
                 RoundedRectangle:
                     size: self.size
                     pos: self.pos
-                    radius: [6]
+                    radius: [15]
         Image:
             source: "assets/search_icon.png"
             size_hint: .3, .3
