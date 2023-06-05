@@ -8,7 +8,9 @@ PythonService = autoclass('org.kivy.android.PythonService')
 PythonService.mService.setAutoRestartService(True)
 
 api_key = "API_KEY"
+
 while True:
+    print("service is working")
     now = datetime.now().strftime("%H:%M")
     if now == '18:00':
         x = list(map(float, open('coords.txt').read().split()))
@@ -52,4 +54,4 @@ while True:
         elif forecast_info[1][1] == 'snow':
             notification.notify(title='It might snow tomorrow',
                                 message="Don't forget to wear a hat!", ticker='Forecast', app_icon='assets/snow.png')
-        sleep(10)
+    sleep(10)
