@@ -534,7 +534,8 @@ class WeatherApp(MDApp):
                 self.gps_not_allowed()
 
         request_permissions([Permission.ACCESS_COARSE_LOCATION,
-                             Permission.ACCESS_FINE_LOCATION], callback)
+                             Permission.ACCESS_FINE_LOCATION,
+                             Permission.FOREGROUND_SERVICE], callback)
 
     def gps_start(self, minTime, minDistance):
         gps.start(minTime, minDistance)
