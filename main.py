@@ -39,7 +39,7 @@ MDFloatLayout:
         pos_hint: {"center_x": .5, "center_y": .89  }
         halign: "center"
         font_size:  "20sp"
-        font_name: "BPoppins"
+        font_name: "BGolos"
     Image:
         id: weather_image
         source: "assets/partlyclouds.png"
@@ -60,7 +60,7 @@ MDFloatLayout:
         pos_hint: {"center_x": .5, "center_y": .54}
         halign: "center"
         font_size:  "20sp"
-        font_name: "Poppins"
+        font_name: "Golos"
 
     MDFloatLayout:
         pos_hint: {"center_x": .25, "center_y": .45}
@@ -73,12 +73,12 @@ MDFloatLayout:
             text: "  %"
             pos_hint: {"center_x": 1, "center_y": .7}
             font_size:  "18sp"
-            font_name: "Poppins"
+            font_name: "Golos"
         MDLabel:
             text: "Humidity"
             pos_hint: {"center_x": 1, "center_y": .3}
             font_size:  "14sp"
-            font_name: "Poppins"    
+            font_name: "Golos"    
 
     MDFloatLayout:
         pos_hint: {"center_x": .7, "center_y": .45}
@@ -92,12 +92,12 @@ MDFloatLayout:
             text: "   m/s"
             pos_hint: {"center_x": 1.1, "center_y": .7}
             font_size:  "18sp"
-            font_name: "Poppins"
+            font_name: "Golos"
         MDLabel:
             text: "Wind"
             pos_hint: {"center_x": 1.1, "center_y": .3}
             font_size:  "14sp"
-            font_name: "Poppins"
+            font_name: "Golos"
 
     MDFloatLayout:
         size_hint_y: .12
@@ -126,7 +126,7 @@ MDFloatLayout:
                 pos_hint: {"center_x": .5, "center_y": .5}
                 height: self.minimum_height
                 multiline: False
-                font_name: "BPoppins"
+                font_name: "BGolos"
                 font_size: "20sp"
                 hint_text_color: 1,1,1,1
                 foreground_color: 1,1,1,1
@@ -139,7 +139,7 @@ MDFloatLayout:
         Button:
             id: get_weather_button
             # text: "G"
-            font_name: "BPoppins"
+            font_name: "BGolos"
             font_size: "20sp"
             size_hint: .2, .7
             pos_hint: {"center_x": .87, "center_y": .5}
@@ -186,14 +186,14 @@ MDFloatLayout:
                 pos_hint: {"center_x": 0.5, "center_y": .875}
                 halign: "center"
                 font_size:  "15sp"
-                font_name: "Poppins"
+                font_name: "Golos"
             MDLabel:
                 id: d1_temp
                 text: "15°"
                 pos_hint: {"center_x": 0.5, "center_y": .2}
                 halign: "center"
                 font_size:  "18sp"
-                font_name: "Poppins"
+                font_name: "Golos"
             Image:
                 id: d1_img
                 source: "assets/sun.png"
@@ -216,14 +216,14 @@ MDFloatLayout:
                 pos_hint: {"center_x": 0.5, "center_y": .875}
                 halign: "center"
                 font_size:  "15sp"
-                font_name: "Poppins"        
+                font_name: "Golos"        
             MDLabel:
                 id: d2_temp
                 text: "15°"
                 pos_hint: {"center_x": 0.5, "center_y": .2}
                 halign: "center"
                 font_size:  "18sp"
-                font_name: "Poppins"
+                font_name: "Golos"
             Image:
                 id: d2_img
                 source: "assets/snow.png"
@@ -246,14 +246,14 @@ MDFloatLayout:
                 pos_hint: {"center_x": 0.5, "center_y": .875}
                 halign: "center"
                 font_size:  "15sp"
-                font_name: "Poppins"
+                font_name: "Golos"
             MDLabel:
                 id: d3_temp
                 text: "15°"
                 pos_hint: {"center_x": 0.5, "center_y": .2}
                 halign: "center"
                 font_size:  "18sp"
-                font_name: "Poppins"
+                font_name: "Golos"
             Image:
                 id: d3_img
                 source: "assets/wind.png"
@@ -276,14 +276,14 @@ MDFloatLayout:
                 pos_hint: {"center_x": 0.5, "center_y": .875}
                 halign: "center"
                 font_size:  "15sp"
-                font_name: "Poppins"        
+                font_name: "Golos"        
             MDLabel:
                 id: d4_temp
                 text: "15°"
                 pos_hint: {"center_x": 0.5, "center_y": .2}
                 halign: "center"
                 font_size:  "18sp"
-                font_name: "Poppins"
+                font_name: "Golos"
             Image:
                 id: d4_img
                 source: "assets/storm.png"
@@ -305,14 +305,14 @@ MDFloatLayout:
                 pos_hint: {"center_x": 0.5, "center_y": .875}
                 halign: "center"
                 font_size:  "15sp"
-                font_name: "Poppins"   
+                font_name: "Golos"   
             MDLabel:
                 id: d5_temp
                 text: "15°"
                 pos_hint: {"center_x": 0.5, "center_y": .2}
                 halign: "center"
                 font_size:  "18sp"
-                font_name: "Poppins"
+                font_name: "Golos"
             Image:
                 id: d5_img
                 source: "assets/haze.png"
@@ -574,6 +574,6 @@ class WeatherApp(MDApp):
 
 
 if __name__ == "__main__":
-    LabelBase.register(name="Poppins", fn_regular="fonts/Poppins-Medium.ttf")
-    LabelBase.register(name="BPoppins", fn_regular="fonts/Poppins-SemiBold.ttf")
+    LabelBase.register(name="Golos", fn_regular="fonts/Golos-Medium.ttf")
+    LabelBase.register(name="BGolos", fn_regular="fonts/Golos-DemiBold.ttf")
     WeatherApp().run()
