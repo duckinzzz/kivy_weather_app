@@ -9,7 +9,7 @@ from kivy.clock import mainthread
 from kivy.properties import StringProperty
 from kivy.clock import Clock
 
-Window.size = (338, 600)
+# Window.size = (338, 600)  #desktop window size
 Window.keyboard_anim_args = {'d': .2, 't': 'in_out_expo'}
 Window.softinput_mode = "below_target"
 api_key = "API_KEY"
