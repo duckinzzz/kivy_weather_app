@@ -44,6 +44,8 @@ MDFloatLayout:
         id: weather_image
         source: "assets/partlyclouds.png"
         pos_hint: {"center_x": .5, "center_y": .77}
+        size_hint: .2, .2
+
     MDLabel:
         id: temperature
         text: ""
